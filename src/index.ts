@@ -1,11 +1,14 @@
 import { createAgent } from "langchain";
-import "./utils/env.js";
+import env from "./utils/env.js";
 import getWeather from "./tools/weather.js";
-import { ChatOllama } from "@langchain/ollama";
+import { ChatOpenAI } from "@langchain/openai";
 
-
-const model = new ChatOllama({
-  model: "gemma4:e4b",
+const model = new ChatOpenAI({
+  model: env.OPENAI_MODEL,
+  apiKey: env.OPENAI_API_KEY,
+  configuration: {
+    baseURL: env.OPENAI_BASE_URL,
+  },
   temperature: 0,
 });
 
@@ -14,20 +17,28 @@ const agent = createAgent({
   tools: [getWeather],
 });
 
+console.log("Thinking...");
+
 const stream = await agent.stream(
   {
     messages: [{ role: "user", content: "What's the weather in Delhi?" }],
   },
   {
     streamMode: "messages",
-  }
+  },
 );
 
-
 for await (const [message] of stream) {
+  const isToolResult = message.type === "tool";
+
   for (const block of message.contentBlocks) {
     if (block.type === "text") {
-      console.log(block.text);
+      if (isToolResult) {
+        console.log("Recieved tool result:", block.text);
+        console.log("Generating answer...");
+      } else {
+        process.stdout.write(block.text);
+      }
     }
 
     if (block.type === "tool_call_chunk") {
@@ -35,11 +46,9 @@ for await (const [message] of stream) {
     }
 
     if (block.type === "tool_call") {
-      console.log("Tool called:", block);
-    }
-
-    if (block.type === "server_tool_call_result") {
-      console.log("Tool result:", block);
+      console.log("Calling tool:", block.name);
     }
   }
 }
+
+console.log();
