@@ -13,7 +13,7 @@ const env = {
   NODE_ENV: getEnvVariable("NODE_ENV"),
   PORT: parseInt(getEnvVariable("PORT"), 10),
   GOOGLE_API_KEY: getEnvVariable("GOOGLE_API_KEY"),
-  WEATHER_API_KEY: getEnvVariable("WEATHER_API_KEY"),
+  TAVILY_API_KEY: getEnvVariable("TAVILY_API_KEY"),
   OPENAI_API_KEY: getEnvVariable("OPENAI_API_KEY"),
   OPENAI_BASE_URL: getEnvVariable("OPENAI_BASE_URL"),
   OPENAI_MODEL: getEnvVariable("OPENAI_MODEL"),

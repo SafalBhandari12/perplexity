@@ -1,7 +1,8 @@
 import { createAgent } from "langchain";
 import env from "./utils/env.js";
-import getWeather from "./tools/weather.js";
 import { ChatOpenAI } from "@langchain/openai";
+import { TavilySearch } from "@langchain/tavily";
+import type { ClientTool } from "@langchain/core/tools";
 
 const model = new ChatOpenAI({
   model: env.OPENAI_MODEL,
@@ -12,16 +13,23 @@ const model = new ChatOpenAI({
   temperature: 0,
 });
 
+const tavilySearch = new TavilySearch({
+  tavilyApiKey: env.TAVILY_API_KEY,
+  maxResults: 3,
+});
+
 const agent = createAgent({
   model,
-  tools: [getWeather],
+  // @langchain/tavily's schema is typed against zod/v3, which fails
+  // structural typing under this project's exactOptionalPropertyTypes.
+  tools: [tavilySearch as unknown as ClientTool],
 });
 
 console.log("Thinking...");
 
 const stream = await agent.stream(
   {
-    messages: [{ role: "user", content: "What's the weather in Delhi?" }],
+    messages: [{ role: "user", content: "What happened to recent rape case in nepal?" }],
   },
   {
     streamMode: "messages",
