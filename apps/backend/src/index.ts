@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import env from "./utils/env.js";
-import { agent } from "./agent/index.js";
+import { runPipeline } from "./pipeline/index.js";
 import { messageRequestSchema } from "./schemas/message.schema.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
@@ -22,27 +22,25 @@ app.post("/message", async (req, res) => {
   res.flushHeaders();
 
   try {
-    const stream = await agent.stream({ messages }, { streamMode: "messages" });
-
-    for await (const [message] of stream) {
-      const isToolResult = message.type === "tool";
-
-      for (const block of message.contentBlocks) {
-        if (block.type === "text") {
-          if (isToolResult) {
-            sendEvent(res, "tool_result", { text: block.text });
-          } else {
-            sendEvent(res, "token", { text: block.text });
-          }
-        }
-
-        if (block.type === "tool_call") {
-          sendEvent(res, "tool_call", { name: block.name, args: block.args });
-        }
+    for await (const event of runPipeline(messages)) {
+      switch (event.type) {
+        case "status":
+          sendEvent(res, "status", { text: event.text });
+          break;
+        case "sources":
+          sendEvent(res, "sources", { sources: event.sources });
+          break;
+        case "token":
+          sendEvent(res, "token", { text: event.text });
+          break;
+        case "follow_up":
+          sendEvent(res, "follow_up", { questions: event.questions });
+          break;
+        case "done":
+          sendEvent(res, "done", {});
+          break;
       }
     }
-
-    sendEvent(res, "done", {});
   } catch (err) {
     console.error(err);
     sendEvent(res, "error", { message: "Failed to generate a response." });

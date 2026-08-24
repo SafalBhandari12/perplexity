@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "@langchain/openai";
-import env from "../utils/env.js";
+import env from "./utils/env.js";
 
 export const model = new ChatOpenAI({
   model: env.OPENAI_MODEL,

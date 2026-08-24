@@ -14,6 +14,7 @@ const env = {
   PORT: parseInt(getEnvVariable("PORT"), 10),
   GOOGLE_API_KEY: getEnvVariable("GOOGLE_API_KEY"),
   TAVILY_API_KEY: getEnvVariable("TAVILY_API_KEY"),
+  HUGGINGFACE_API_KEY: getEnvVariable("HUGGINGFACE_API_KEY"),
   OPENAI_API_KEY: getEnvVariable("OPENAI_API_KEY"),
   OPENAI_BASE_URL: getEnvVariable("OPENAI_BASE_URL"),
   OPENAI_MODEL: getEnvVariable("OPENAI_MODEL"),
